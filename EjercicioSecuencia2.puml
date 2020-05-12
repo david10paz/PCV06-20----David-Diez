@@ -1,0 +1,94 @@
+@startuml
+skinparam sequenceParticipant underline
+hide footbox
+
+actor "Cliente" as Cliente
+boundary ":Interfaz Pago" as InterfazPag
+control ":Controlador Pedido" as ControladorPed
+entity ":Entidad Pedido" as EntidadPed
+control ":Controlador Pago" as ControladorPag
+entity ":Entidad Pago" as EntidadPag
+boundary ":Interfaz Banco" as InterfazBan
+actor "Sistema Gestión Pagos Banco" as SistGesPagBan
+
+activate Cliente
+activate SistGesPagBan
+autonumber "1-"
+Cliente -> InterfazPag : realizarPago
+activate InterfazPag
+InterfazPag -> ControladorPed : listarPedidos
+activate ControladorPed
+autonumber 2
+ControladorPed -> EntidadPed : recuperarPedidos
+activate EntidadPed
+EntidadPed --> ControladorPed : pedidos
+deactivate EntidadPed
+ControladorPed -> InterfazPag : mostrarPedidos
+deactivate ControladorPed
+
+loop PEDIDOS
+    autonumber "5-"
+    Cliente -> InterfazPag : seleccionarPedido
+    activate ControladorPed
+    InterfazPag -> ControladorPed : recuperarPedido
+    autonumber 6
+    ControladorPed -> EntidadPed : recuperarDatosPedido
+    activate EntidadPed
+    EntidadPed --> ControladorPed : datosPedido
+    deactivate EntidadPed
+    ControladorPed -> InterfazPag : mostrarDatosPedido
+    deactivate ControladorPed
+end
+
+autonumber "9-"
+Cliente -> InterfazPag : confirmarPedido
+activate ControladorPed
+InterfazPag -> ControladorPed : solicitarPago
+activate ControladorPag
+ControladorPed -> ControladorPag : pagoPedido
+deactivate ControladorPed
+ControladorPag -> InterfazPag : solicitarFormaPago
+autonumber stop
+
+autonumber 10
+Cliente -> InterfazPag : seleccionarFormaPago
+InterfazPag -> ControladorPed : procesarTarjeta
+autonumber stop
+
+alt pago = tarjeta
+
+  autonumber "11- "
+  Cliente -> InterfazPag : introducirDatos
+  InterfazPag -> ControladorPag : confirmaDatos
+  ControladorPag -> InterfazBan : confirmarDatosBancarios
+  activate InterfazBan
+  InterfazBan -> SistGesPagBan : confirmarDatos
+  InterfazBan <-- SistGesPagBan : datosCorrectos
+  InterfazBan -> ControladorPag : pagoPedido
+  deactivate InterfazBan
+  ControladorPag -> InterfazBan : realizarPago
+  activate InterfazBan
+  InterfazBan -> SistGesPagBan : realizarPago
+  deactivate InterfazBan
+  ControladorPag -> EntidadPag : registrarPago
+  deactivate ControladorPag
+  activate EntidadPag
+  EntidadPag -> InterfazPag : confirmarPago
+  deactivate InterfazPag
+  deactivate EntidadPag
+
+else
+
+  ControladorPed --> Cliente : retornoSeleccionPago
+  Cliente -> InterfazPag : aportaEfectivo
+  activate InterfazPag
+  InterfazPag -> ControladorPag : confirmaEfectivo
+  activate ControladorPag
+  ControladorPag -> InterfazPag : confirmarPago
+  deactivate ControladorPag 
+
+end
+
+deactivate InterfazPag
+autonumber stop
+@enduml

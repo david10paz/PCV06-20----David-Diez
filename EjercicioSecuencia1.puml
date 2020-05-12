@@ -1,0 +1,58 @@
+@startuml
+skinparam sequenceParticipant underline
+hide footbox
+
+actor "Cliente" as Cliente
+boundary ":Interfaz Pedido" as InterfazPed
+control ":Controlador Pedido" as ControladorPed
+entity ":Entidad Pedido" as EntidadPed
+control ":Controlador Producto" as ControladorPro
+entity ":Entidad Producto" as EntidadPro
+
+activate Cliente
+autonumber "1-"
+Cliente -> InterfazPed : realizarPedido
+activate InterfazPed
+InterfazPed -> ControladorPed : ingresarDireccion
+activate ControladorPed
+InterfazPed <-- ControladorPed : ingresoDireccion
+InterfazPed -> ControladorPed : iniciarPedido
+ControladorPed -> ControladorPro : listarProductos
+activate ControladorPro
+ControladorPro -> EntidadPro : recuperarProductos
+activate EntidadPro
+EntidadPro --> ControladorPro : listaProductos
+deactivate EntidadPro
+ControladorPro --> ControladorPed : listaProductos
+deactivate ControladorPro
+ControladorPed -> InterfazPed : mostarProductos
+autonumber stop
+
+
+autonumber "2-"
+Cliente -> InterfazPed : seleccionarProducto
+deactivate ControladorPed
+InterfazPed -> ControladorPro : recuperarDatosProducto
+activate ControladorPro
+ControladorPro -> EntidadPro : recuperaDatos
+activate EntidadPro
+EntidadPro --> ControladorPro : datosProducto
+deactivate EntidadPro
+ControladorPro -> InterfazPed : mostrarDatosProducto
+autonumber stop
+
+
+
+autonumber "3-"
+Cliente -> InterfazPed : confirmarSeleccion
+InterfazPed -> ControladorPed : confirmarPedido
+activate ControladorPed
+ControladorPed -> EntidadPed : registrarPedido
+activate EntidadPed
+EntidadPed --> ControladorPed : IDPedido
+deactivate EntidadPed
+deactivate ControladorPro
+ControladorPed -> InterfazPed : muestraID
+deactivate ControladorPed
+deactivate InterfazPed
+@enduml
